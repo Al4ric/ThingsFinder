@@ -1,4 +1,22 @@
+using Marten;
+using Marten.Events.Projections;
+using ThingsFinder;
+using ThingsFinder.Models;
+using Weasel.Core;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Build configuration
+var configuration = builder.Configuration;
+
+builder.Services.AddMarten(options =>
+{
+    options.Connection(configuration.GetConnectionString("PostgresConnection") ?? 
+                       throw new InvalidOperationException("Connection string is not found"));
+    options.AutoCreateSchemaObjects = AutoCreate.All;
+
+    options.Projections.Snapshot<MyThing>(SnapshotLifecycle.Inline);
+});
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -16,19 +34,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-/*app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();*/
+app.MapPost("createMyThing", MyThingsMethods.CreateMyThingAsync)
+    .WithName("CreateMyThing")
+    .WithOpenApi();
 
 app.Run();

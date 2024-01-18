@@ -11,6 +11,7 @@ services:
       - db
   db:
     image: postgres
+    container_name: thingsfinder-db
     environment:
       POSTGRES_USER: thingsfinder
       POSTGRES_PASSWORD: temporaryPassword
