@@ -1,0 +1,6 @@
+@ThingsFinder_HostAddress = http://localhost:5098
+
+GET {{ThingsFinder_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
