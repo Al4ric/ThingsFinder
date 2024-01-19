@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingsFinder", "ThingsFinder\ThingsFinder.csproj", "{C97EC446-DEB3-4DBB-9D33-EA0DDED49C0B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThingFinder.Tests", "ThingFinder.Tests\ThingFinder.Tests.csproj", "{4F663A2E-AEF1-4105-B316-9DAF5177CA5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{C97EC446-DEB3-4DBB-9D33-EA0DDED49C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C97EC446-DEB3-4DBB-9D33-EA0DDED49C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C97EC446-DEB3-4DBB-9D33-EA0DDED49C0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F663A2E-AEF1-4105-B316-9DAF5177CA5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F663A2E-AEF1-4105-B316-9DAF5177CA5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F663A2E-AEF1-4105-B316-9DAF5177CA5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F663A2E-AEF1-4105-B316-9DAF5177CA5F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

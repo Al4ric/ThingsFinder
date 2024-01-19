@@ -1,13 +1,21 @@
 using Marten;
 using Marten.Events.Projections;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using ThingsFinder;
 using ThingsFinder.Models;
 using Weasel.Core;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
+const string serviceName = "things-finder";
+
 // Build configuration
 var configuration = builder.Configuration;
+
+builder.Logging.AddConsole();
 
 builder.Services.AddMarten(options =>
 {
@@ -17,6 +25,21 @@ builder.Services.AddMarten(options =>
 
     options.Projections.Snapshot<MyThing>(SnapshotLifecycle.Inline);
 });
+
+// Add OpenTelemetry Tracing
+builder.Logging.AddOpenTelemetry(options =>
+{
+    options
+        .SetResourceBuilder(
+            ResourceBuilder.CreateDefault()
+                .AddService(serviceName))
+        .AddConsoleExporter();
+});
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService(serviceName))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddConsoleExporter());
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -39,3 +62,5 @@ app.MapPost("createMyThing", MyThingsMethods.CreateMyThingAsync)
     .WithOpenApi();
 
 app.Run();
+
+public partial class Program;
