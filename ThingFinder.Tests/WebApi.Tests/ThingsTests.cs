@@ -2,9 +2,11 @@
 using System.Net.Http.Json;
 using FluentAssertions;
 using Marten;
+using Marten.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Npgsql;
 using ThingsFinder;
 using ThingsFinder.Models;
 using ThingsFinder.Requests;
@@ -53,7 +55,8 @@ public class ThingsTests : IClassFixture<CustomWebAppFactory<Program>>
     {
         // Arrange
         var mockLogger = new Mock<ILogger<MyThing>>();
-        var myThing = new CreateMyThingRequest("Test Thing", "Test Description", new byte[10], new List<string> {"Test Tag", "Test Tag 2"});
+        var myThing = new CreateMyThingRequest("Test Thing", "Test Description", new byte[10],
+            ["Test Tag", "Test Tag 2"]);
 
 
         // Act
@@ -66,6 +69,35 @@ public class ThingsTests : IClassFixture<CustomWebAppFactory<Program>>
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((v, t) => v.ToString()!.StartsWith("New MyThing created with id")),
                 It.IsAny<Exception>(),
+                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)!));
+    }
+
+    [Fact]
+    public async Task CreateMyThingAsync_ShouldLogErrorWhenSaveChangesFails()
+    {
+        // Arrange
+        var mockStore = new Mock<IDocumentStore>();
+        var mockSession = new Mock<IDocumentSession>();
+        var mockLogger = new Mock<ILogger<MyThing>>();
+        var mockEvents = new Mock<IEventStore>();
+        var myThing = new CreateMyThingRequest("Test Thing", "Test Description", new byte[10],
+            ["Test Tag", "Test Tag 2"]);
+
+        mockStore.Setup(x => x.LightweightSession(System.Data.IsolationLevel.ReadCommitted)).Returns(mockSession.Object);
+        mockSession.Setup(x => x.Events).Returns(mockEvents.Object);
+        mockSession.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new NpgsqlException("Connection refused"));
+
+        // Act
+        await Assert.ThrowsAsync<NpgsqlException>(() =>
+            MyThingsMethods.CreateMyThingAsync(mockStore.Object, myThing, mockLogger.Object));
+
+        // Assert
+        mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Error,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.StartsWith("Exception caught while saving changes")),
+                It.IsAny<NpgsqlException>(),
                 It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)!));
     }
 }
