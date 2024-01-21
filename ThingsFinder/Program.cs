@@ -1,7 +1,6 @@
 using Marten;
 using Marten.Events.Projections;
 using OpenTelemetry.Logs;
-using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using ThingsFinder;
 using ThingsFinder.Models;

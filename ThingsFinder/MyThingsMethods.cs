@@ -2,8 +2,6 @@
 using Marten.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
-using OpenTelemetry;
-using OpenTelemetry.Trace;
 using ThingsFinder.Events;
 using ThingsFinder.Models;
 using ThingsFinder.Requests;
@@ -12,7 +10,10 @@ namespace ThingsFinder;
 
 public static class MyThingsMethods
 {
-    public static async Task<MyThing?> CreateMyThingAsync([FromServices] IDocumentStore store, [FromBody] CreateMyThingRequest request)
+    public static async Task<MyThing?> CreateMyThingAsync(
+        [FromServices] IDocumentStore store, 
+        [FromBody] CreateMyThingRequest request, 
+        [FromServices] ILogger<MyThing> logger)
     {
         var newId = Guid.NewGuid();
         
@@ -24,21 +25,12 @@ public static class MyThingsMethods
         try
         {
             await session.SaveChangesAsync();
+            logger.LogInformation("New MyThing created with id {Id}", newId);
         }
-        catch (Exception ex) when (ex is ConcurrencyException || ex is NpgsqlException)
+        catch (Exception ex) when (ex is ConcurrencyException or NpgsqlException)
         {
-            // Create tracer for logging
-            var tracerProvider = Sdk.CreateTracerProviderBuilder()
-                .AddConsoleExporter()
-                .Build();
-
-            // Get tracer from tracer provider
-            var tracer = tracerProvider.GetTracer("things-finder");
-
-            // Start a new span for logging
-            using var scope = tracer.StartActiveSpan("SaveChangesError");
             // Log the exception
-            scope.AddEvent($"Exception caught: {ex.Message}");
+            logger.LogError(ex, "Exception caught while saving changes");
 
             // Re-throw the exception to avoid hiding it
             throw;
