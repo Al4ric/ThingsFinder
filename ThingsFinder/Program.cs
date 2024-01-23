@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Marten;
 using Marten.Events.Projections;
 using OpenTelemetry.Logs;
@@ -13,8 +14,6 @@ const string serviceName = "things-finder";
 
 // Build configuration
 var configuration = builder.Configuration;
-
-builder.Logging.AddConsole();
 
 builder.Services.AddMarten(options =>
 {
@@ -63,3 +62,8 @@ app.MapPost("createMyThing", MyThingsMethods.CreateMyThingAsync)
 app.Run();
 
 public partial class Program;
+
+public static class ActivityHelper
+{
+    public static readonly ActivitySource Source = new("things-finder");
+}

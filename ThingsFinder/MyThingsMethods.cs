@@ -12,8 +12,7 @@ public static class MyThingsMethods
 {
     public static async Task<MyThing?> CreateMyThingAsync(
         [FromServices] IDocumentStore store, 
-        [FromBody] CreateMyThingRequest request, 
-        [FromServices] ILogger<MyThing> logger)
+        [FromBody] CreateMyThingRequest request)
     {
         var newId = Guid.NewGuid();
         
@@ -25,14 +24,13 @@ public static class MyThingsMethods
         try
         {
             await session.SaveChangesAsync();
-            logger.LogInformation("New MyThing created with id {Id}", newId);
+            
         }
         catch (Exception ex) when (ex is ConcurrencyException or NpgsqlException)
         {
-            // Log the exception
-            logger.LogError(ex, "Exception caught while saving changes");
-
-            // Re-throw the exception to avoid hiding it
+            using var errorActivity = ActivityHelper.Source.StartActivity(name: "Error_While_Creating_MyThing");
+            errorActivity?.SetTag("error", ex.Message);
+            
             throw;
         }
 
