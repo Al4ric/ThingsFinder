@@ -4,8 +4,9 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Marten;
 using Marten.Events;
-using Moq;
 using Npgsql;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using ThingsFinder;
 using ThingsFinder.Models;
 using ThingsFinder.Requests;
@@ -52,19 +53,19 @@ public class ThingsTests : IAsyncLifetime
     [Fact]
     public async Task CreateMyThingAsync_ShouldLogErrorWhenSaveChangesFails()
     {
-        var mockStore = new Mock<IDocumentStore>();
-        var mockSession = new Mock<IDocumentSession>();
-        var mockEvents = new Mock<IEventStore>();
+        var mockStore = Substitute.For<IDocumentStore>();
+        var mockSession = Substitute.For<IDocumentSession>();
+        var mockEvents = Substitute.For<IEventStore>();
         var myThing = new CreateMyThingRequest("Test Thing", "Test Description", new byte[10],
             ["Test Tag", "Test Tag 2"]);
 
-        mockStore.Setup(x => x.LightweightSession(System.Data.IsolationLevel.ReadCommitted)).Returns(mockSession.Object);
-        mockSession.Setup(x => x.Events).Returns(mockEvents.Object);
-        mockSession.Setup(x => x.SaveChangesAsync(default)).ThrowsAsync(new NpgsqlException("Connection refused"));
-        
+        mockStore.LightweightSession().Returns(mockSession);
+        mockSession.Events.Returns(mockEvents);
+        mockSession.SaveChangesAsync().ThrowsForAnyArgs(new NpgsqlException("Connection refused"));
+
         await Assert.ThrowsAsync<NpgsqlException>(() =>
-            MyThingsMethods.CreateMyThingAsync(mockStore.Object, myThing));
-        
+            MyThingsMethods.CreateMyThingAsync(mockStore, myThing));
+
         var foundActivity = CollectedSpans.FirstOrDefault(
             a =>
                 a.DisplayName.Contains("Error_While_Creating_MyThing"));
