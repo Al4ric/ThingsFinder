@@ -36,4 +36,10 @@ public static class MyThingsMethods
 
         return session.Events.AggregateStream<MyThing>(newId);
     }
+
+    public static async Task<MyThing?> GetMyThingByIdAsync([FromServices] IDocumentStore store, Guid id)
+    {
+        await using var session = store.LightweightSession();
+        return session.Events.AggregateStream<MyThing>(id);
+    }
 }

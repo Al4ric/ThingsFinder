@@ -72,6 +72,29 @@ public class ThingsTests : IAsyncLifetime
         Assert.NotNull(foundActivity);
     }
 
+    [Fact]
+    public async Task GetMyThingByIdAsync_ShouldReturnOkAndProperResult()
+    {
+        // Arrange
+        var myThingRequest =
+            new CreateMyThingRequest("name", "description", [], ["tag1", "tag2"]);
+        var myThingResponse = await _client.PostAsJsonAsync("createMyThing", myThingRequest);
+        var myThing = await myThingResponse.Content.ReadFromJsonAsync<MyThing>();
+
+        // Act
+        var response = await _client.GetAsync($"getMyThing/{myThing?.Id}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<MyThing>();
+        result.Should().NotBeNull();
+        result!.Id.ToString().Should().Be(myThing?.Id.ToString());
+        result.Name.Should().Be(myThing?.Name);
+        result.Description.Should().Be(myThing?.Description); // Add null check
+        result.Image.Should().BeEquivalentTo(myThing?.Image); // Add null check
+        result.Tags.Should().BeEquivalentTo(myThing?.Tags); // Add null check
+    }
+
     public Task InitializeAsync()
     {
         CollectedSpans.RemoveAll(_ => true);

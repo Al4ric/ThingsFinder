@@ -64,6 +64,10 @@ app.MapPost("createMyThing", MyThingsMethods.CreateMyThingAsync)
     .WithName("CreateMyThing")
     .WithOpenApi();
 
+app.MapGet("getMyThing/{id}", MyThingsMethods.GetMyThingByIdAsync)
+    .WithName("GetMyThingById")
+    .WithOpenApi();
+
 app.Run();
 
 public partial class Program;
