@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Marten;
 using Marten.Events.Projections;
+using Npgsql;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 using ThingsFinder;
@@ -31,12 +32,16 @@ builder.Logging.AddOpenTelemetry(options =>
         .SetResourceBuilder(
             ResourceBuilder.CreateDefault()
                 .AddService(serviceName))
-        .AddConsoleExporter();
+        .AddConsoleExporter()
+        .AddOtlpExporter();
 });
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService(serviceName))
     .WithTracing(tracing => tracing
         .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddNpgsql()
+        .AddOtlpExporter()
         .AddConsoleExporter());
 
 // Add services to the container.
