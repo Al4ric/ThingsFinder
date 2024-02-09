@@ -60,13 +60,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapPost("createMyThing", MyThingsMethods.CreateMyThingAsync)
-    .WithName("CreateMyThing")
-    .WithOpenApi();
-
-app.MapGet("getMyThing/{id}", MyThingsMethods.GetMyThingByIdAsync)
-    .WithName("GetMyThingById")
-    .WithOpenApi();
+app.UseMyRouting();
 
 app.Run();
 
