@@ -7,6 +7,7 @@ using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Testcontainers.PostgreSql;
+using ThingsFinder;
 
 namespace ThingFinder.Tests;
 

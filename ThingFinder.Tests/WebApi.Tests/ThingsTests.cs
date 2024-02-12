@@ -26,7 +26,7 @@ public class ThingsTests : IAsyncLifetime
         var testSpan = _webApp.TestTracer.StartRootSpan("Test started");
         
         _client.DefaultRequestHeaders.Add("traceparent", 
-            $"00-{testSpan.Context.TraceId.ToString()}-{testSpan.Context.SpanId.ToString()}-01");
+            $"00-{testSpan.Context.TraceId}-{testSpan.Context.SpanId}-01");
     }
     
     [Fact]

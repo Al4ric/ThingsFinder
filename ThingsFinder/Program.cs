@@ -1,13 +1,12 @@
-using System.Diagnostics;
 using Marten;
 using Marten.Events.Projections;
 using Npgsql;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
-using ThingsFinder;
 using ThingsFinder.Models;
 using Weasel.Core;
 using OpenTelemetry.Trace;
+using ThingsFinder.Routes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -65,8 +64,3 @@ app.UseMyRouting();
 app.Run();
 
 public partial class Program;
-
-public static class ActivityHelper
-{
-    public static readonly ActivitySource Source = new("things-finder");
-}

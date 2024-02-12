@@ -1,4 +1,4 @@
-using ThingsFinder;
+namespace ThingsFinder.Routes;
 
 public static class MyRoutingExtensions
 {

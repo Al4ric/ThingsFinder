@@ -28,8 +28,13 @@ public static class MyThingsMethods
         }
         catch (Exception ex) when (ex is ConcurrencyException or NpgsqlException)
         {
-            using var errorActivity = ActivityHelper.Source.StartActivity(name: "Error_While_Creating_MyThing");
-            errorActivity?.SetTag("error", ex.Message);
+            const string errorTagName = "error";
+            const string errorActivityName = "Error_While_Creating_MyThing";
+
+            using var errorActivity = ActivityHelper.Source.StartActivity(name: errorActivityName);
+            errorActivity!.SetTag(errorTagName, ex.Message);
+            errorActivity.SetTag("ExceptionType", ex.GetType().Name);
+            errorActivity.SetTag("ObjectId", newId.ToString());
             
             throw;
         }
