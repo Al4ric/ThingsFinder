@@ -14,14 +14,13 @@ using ThingsFinder.Requests;
 namespace ThingFinder.Tests.WebApi.Tests;
 
 [Collection(nameof(SharedTestCollection))]
-public class ThingsTests //: IAsyncLifetime
+public class ThingsTests
 {
     private readonly HttpClient _client;
     private readonly List<Activity> _collectedSpans;
 
     public ThingsTests(CustomWebAppFactory apiFactory)
     {
-        //var webApp = new CustomWebAppFactory(CollectedSpans);
         _client = apiFactory.HttpClient;
         var testSpan = apiFactory.TestTracer.StartRootSpan("Test started");
         _collectedSpans = apiFactory.CollectedSpans;
@@ -91,19 +90,8 @@ public class ThingsTests //: IAsyncLifetime
         result.Should().NotBeNull();
         result!.Id.ToString().Should().Be(myThing?.Id.ToString());
         result.Name.Should().Be(myThing?.Name);
-        result.Description.Should().Be(myThing?.Description); // Add null check
-        result.Image.Should().BeEquivalentTo(myThing?.Image); // Add null check
-        result.Tags.Should().BeEquivalentTo(myThing?.Tags); // Add null check
+        result.Description.Should().Be(myThing?.Description);
+        result.Image.Should().BeEquivalentTo(myThing?.Image);
+        result.Tags.Should().BeEquivalentTo(myThing?.Tags);
     }
-
-    //public Task InitializeAsync()
-    //{
-    //    CollectedSpans.RemoveAll(_ => true);
-    //    return Task.CompletedTask;
-    //}
-
-    //public async Task DisposeAsync()
-    //{
-    //    await _webApp.DisposeAsync();
-    //}
 }
