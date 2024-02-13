@@ -13,17 +13,18 @@ using ThingsFinder.Requests;
 
 namespace ThingFinder.Tests.WebApi.Tests;
 
-public class ThingsTests : IAsyncLifetime
+[Collection(nameof(SharedTestCollection))]
+public class ThingsTests //: IAsyncLifetime
 {
     private readonly HttpClient _client;
-    private static readonly List<Activity> CollectedSpans = [];
-    private readonly CustomWebAppFactory<Program> _webApp;
+    private readonly List<Activity> _collectedSpans;
 
-    public ThingsTests()
+    public ThingsTests(CustomWebAppFactory apiFactory)
     {
-        _webApp = new CustomWebAppFactory<Program>(CollectedSpans);
-        _client = _webApp.CreateClient();
-        var testSpan = _webApp.TestTracer.StartRootSpan("Test started");
+        //var webApp = new CustomWebAppFactory(CollectedSpans);
+        _client = apiFactory.HttpClient;
+        var testSpan = apiFactory.TestTracer.StartRootSpan("Test started");
+        _collectedSpans = apiFactory.CollectedSpans;
         
         _client.DefaultRequestHeaders.Add("traceparent", 
             $"00-{testSpan.Context.TraceId}-{testSpan.Context.SpanId}-01");
@@ -66,7 +67,7 @@ public class ThingsTests : IAsyncLifetime
         await Assert.ThrowsAsync<NpgsqlException>(() =>
             MyThingsMethods.CreateMyThingAsync(mockStore, myThing));
 
-        var foundActivity = CollectedSpans.FirstOrDefault(
+        var foundActivity = _collectedSpans.FirstOrDefault(
             a =>
                 a.DisplayName.Contains("Error_While_Creating_MyThing"));
         Assert.NotNull(foundActivity);
@@ -95,14 +96,14 @@ public class ThingsTests : IAsyncLifetime
         result.Tags.Should().BeEquivalentTo(myThing?.Tags); // Add null check
     }
 
-    public Task InitializeAsync()
-    {
-        CollectedSpans.RemoveAll(_ => true);
-        return Task.CompletedTask;
-    }
+    //public Task InitializeAsync()
+    //{
+    //    CollectedSpans.RemoveAll(_ => true);
+    //    return Task.CompletedTask;
+    //}
 
-    public async Task DisposeAsync()
-    {
-        await _webApp.DisposeAsync();
-    }
+    //public async Task DisposeAsync()
+    //{
+    //    await _webApp.DisposeAsync();
+    //}
 }
