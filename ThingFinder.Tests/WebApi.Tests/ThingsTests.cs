@@ -4,9 +4,11 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Marten;
 using Marten.Events;
+using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
+using OpenTelemetry.Trace;
 using ThingsFinder;
 using ThingsFinder.Models;
 using ThingsFinder.Requests;
@@ -18,10 +20,12 @@ public class ThingsTests
 {
     private readonly HttpClient _client;
     private readonly List<Activity> _collectedSpans;
+    private readonly Tracer _tracer;
 
     public ThingsTests(CustomWebAppFactory apiFactory)
     {
         _client = apiFactory.HttpClient;
+        _tracer = apiFactory.Services.GetRequiredService<Tracer>();
         var testSpan = apiFactory.TestTracer.StartRootSpan("Test started");
         _collectedSpans = apiFactory.CollectedSpans;
         
@@ -64,7 +68,7 @@ public class ThingsTests
         mockSession.SaveChangesAsync().ThrowsForAnyArgs(new NpgsqlException("Connection refused"));
 
         await Assert.ThrowsAsync<NpgsqlException>(() =>
-            MyThingsMethods.CreateMyThingAsync(mockStore, myThing));
+            MyThingsMethods.CreateMyThingAsync(mockStore, _tracer, myThing));
 
         var foundActivity = _collectedSpans.FirstOrDefault(
             a =>

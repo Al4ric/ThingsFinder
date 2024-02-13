@@ -2,6 +2,7 @@
 using Marten.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Npgsql;
+using OpenTelemetry.Trace;
 using ThingsFinder.Events;
 using ThingsFinder.Models;
 using ThingsFinder.Requests;
@@ -11,9 +12,13 @@ namespace ThingsFinder;
 public static class MyThingsMethods
 {
     public static async Task<MyThing?> CreateMyThingAsync(
-        [FromServices] IDocumentStore store, 
+        [FromServices] IDocumentStore store,
+        [FromServices] Tracer tracer,
         [FromBody] CreateMyThingRequest request)
     {
+        using var span = tracer.StartActiveSpan("thingsFinder.manual-span");
+        span.SetAttribute("thingsFinder.message", "Creating new thing");
+
         var newId = Guid.NewGuid();
         
         await using var session = store.LightweightSession();

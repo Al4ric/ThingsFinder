@@ -24,6 +24,9 @@ builder.Services.AddMarten(options =>
     options.Projections.Snapshot<MyThing>(SnapshotLifecycle.Inline);
 });
 
+// Honeycomb specific
+var honeycombOptions = builder.Configuration.GetHoneycombOptions();
+
 // Add OpenTelemetry Tracing
 builder.Logging.AddOpenTelemetry(options =>
 {
@@ -37,6 +40,8 @@ builder.Logging.AddOpenTelemetry(options =>
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource.AddService(serviceName))
     .WithTracing(tracing => tracing
+        .AddHoneycomb(honeycombOptions)
+        .AddCommonInstrumentations()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddNpgsql()
@@ -47,6 +52,9 @@ builder.Services.AddOpenTelemetry()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Register Tracer so it can be injected into other components (eg Controllers)
+builder.Services.AddSingleton(TracerProvider.Default.GetTracer(honeycombOptions.ServiceName));
 
 var app = builder.Build();
 
